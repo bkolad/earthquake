@@ -4,19 +4,24 @@ module EarthQuakeParser where
 
 import qualified Data.Attoparsec.ByteString as P
 import qualified Data.Attoparsec.ByteString.Char8 as PC8
+
 import qualified Data.ByteString.Char8 as BC
 import qualified Data.ByteString as BS
 import qualified Data.Time as T
 import qualified Common as CM 
+import qualified Data.Conduit.List as CL
 import Data.Conduit.Attoparsec (conduitParser, PositionRange)
-import Control.Applicative ((<$>), (<*>), (<*), many, (<$), (<|>))
-import Control.Monad.Trans(liftIO)
+import Control.Applicative ((<*>),  (<|>))
+
+import Control.Monad.Trans(liftIO, MonadIO)
 import Control.Monad.Catch
 import qualified Data.Conduit.Binary as CB
 import Data.Conduit 
 
 
 query = "/home/blazej/Programowanie/EarthQake/query"
+
+
 
 data EarthQuake = 
   EarthQuake{ time :: T.UTCTime
@@ -38,9 +43,10 @@ data EarthQuake =
 
 
 instance Show EarthQuake where
-  show e = (show $ time e)++" "++(place e)
+  show e = "{"++(show $ time e)++"  ::  "++(place e) ++" }"
  
 
+ 
 parseUTC :: String -> T.UTCTime
 parseUTC = parseTimestamp 
   where
@@ -97,31 +103,57 @@ parseEarthQuake = do
                       place
                       typ
   
+
+debug :: 
+  (Show a, MonadThrow m, MonadIO m)
+  => Conduit a m a    
+debug = 
+  awaitForever $ \x -> (liftIO $ print x) 
+                    >> yield x 
                     
   
+  
    
-parseEarthQuakeC :: MonadThrow m => Conduit BS.ByteString m (Either String EarthQuake)--(PositionRange, EarthQuake)  
-parseEarthQuakeC =  awaitForever(\x->yield(PC8.parseOnly parseEarthQuake x))--conduitParser parseEarthQuake   
+parseEarthQuakeC :: 
+  MonadThrow m
+  => Conduit BS.ByteString m (Either String EarthQuake)  
+parseEarthQuakeC = 
+  awaitForever(\x -> yield(PC8.parseOnly parseEarthQuake x))   
+ 
+ 
+ 
+cutOffC ::    
+  MonadThrow m     
+  => Conduit (Either String EarthQuake)  m (Either String EarthQuake) 
+cutOffC = 
+  await >>= maybe (return()) (process)
+  where
+    process x =
+      case x of
+        l@(Left _)  -> yield l
+        r@(Right x) -> yield r >> cutOffC
+      
+     
     
   
-appSink :: CM.MonadResource m => Sink (Either String EarthQuake) m ()   --Sink (PositionRange, EarthQuake) m ()  
-appSink = awaitForever (\x -> liftIO $ print x)
-  
-  
-  
-earthquakes :: CM.MonadResource m => FilePath -> m () 
+earthquakes :: 
+  CM.MonadResource m 
+  => FilePath 
+  -> m [Either String EarthQuake]
 earthquakes fn = do
   CB.sourceFile fn
   =$= CB.lines
   =$= CM.skip 1
   =$= parseEarthQuakeC
-  $$ appSink
+  =$= cutOffC
+  $$ CL.consume 
   
   
   
-start :: IO()  
-start = CM.runResourceT $ earthquakes query  
+start :: IO (Either String [EarthQuake])
+start = CM.runResourceT (sequence <$> (earthquakes query))  
   
+ 
  
 iso8601 :: T.UTCTime -> String
 iso8601 = T.formatTime T.defaultTimeLocale "%FT%T%QZ"
@@ -129,15 +161,18 @@ iso8601 = T.formatTime T.defaultTimeLocale "%FT%T%QZ"
 
 noneOf cs = PC8.satisfy (\c -> not (elem c cs)) 
  
+
  
 parseWord:: P.Parser String
 parseWord = PC8.many' $ noneOf [',']
 
+
+
 parseLocation:: P.Parser String
 parseLocation = location <|> parseWord 
-  where location = PC8.char '"' *> (PC8.many1 $ PC8.notChar '"') <*PC8.char '"' 
+  where location = PC8.char '"' *> (PC8.many1 $ PC8.notChar '"') <* PC8.char '"' 
       
-main2 = PC8.parseOnly parseEarthQuake $ 
+main = PC8.parseOnly parseEarthQuake $ 
    BC.pack "2015-09-18T15:59:42.800Z,15.2337,-45.9734,10,6,mwc,,31,13.337,1.12,us,us20003lc6,2015-09-19T01:57:01.000Z,\"Northern Mid-Atlantic, lala\", earthquake"
 
    
