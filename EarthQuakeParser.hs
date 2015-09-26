@@ -155,8 +155,6 @@ start = CM.runResourceT (sequence <$> (earthquakes query))
   
  
  
-iso8601 :: T.UTCTime -> String
-iso8601 = T.formatTime T.defaultTimeLocale "%FT%T%QZ"
 
 
 noneOf cs = PC8.satisfy (\c -> not (elem c cs)) 
@@ -175,6 +173,10 @@ parseLocation = location <|> parseWord
 main = PC8.parseOnly parseEarthQuake $ 
    BC.pack "2015-09-18T15:59:42.800Z,15.2337,-45.9734,10,6,mwc,,31,13.337,1.12,us,us20003lc6,2015-09-19T01:57:01.000Z,\"Northern Mid-Atlantic, lala\", earthquake"
 
+   
+   
+iso8601 :: T.UTCTime -> String
+iso8601 = T.formatTime T.defaultTimeLocale "%FT%T%QZ"
    
 -- commaSep = (PC8.many1 $ PC8.notChar ',') `PC8.sepBy'` (PC8.char ',')            
    
