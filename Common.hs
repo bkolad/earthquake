@@ -2,9 +2,7 @@ module Common (skip
                , R.MonadResource
                , R.runResourceT
                , T.UTCTime
-               , T.parseTimeOrError
-               , T.defaultTimeLocale
-               , T.formatTime
+               , parseUTC
                , P.Parser
                , PC8.char
                , PC8.many1
@@ -41,6 +39,12 @@ skip n = go n
           yield a
           go 0
           --}       
+ 
+parseUTC :: String -> String-> Maybe T.UTCTime
+parseUTC format input = 
+  (T.parseTimeM False T.defaultTimeLocale format input) :: Maybe T.UTCTime
+  
+  
  
 debug :: 
   (Show a, MonadThrow m, MonadIO m)

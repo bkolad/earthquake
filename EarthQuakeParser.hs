@@ -37,14 +37,18 @@ data EarthQuake =
 instance Show EarthQuake where
   show e = "{"++(show $ time e)++"  ::  "++(place e) ++" }"
  
-
  
+ 
+format = "%FT%T%QZ"
+ 
+ 
+{-- 
 parseUTC :: String -> CM.UTCTime
 parseUTC = parseTimestamp 
   where
     parseTimestamp = 
       CM.parseTimeOrError False CM.defaultTimeLocale "%FT%T%QZ"
- 
+      --}
  
 parseLocation:: CM.Parser String
 parseLocation = location <|> CM.parseWord 
@@ -55,50 +59,53 @@ parseLocation = location <|> CM.parseWord
   
 parseEarthQuake :: CM.Parser EarthQuake  
 parseEarthQuake = do 
-  time      <- parseUTC <$> CM.parseWord
-  _         <- CM.comma
-  latitude  <- CM.parseWord
-  _         <- CM.comma
-  longitude <- CM.parseWord
-  _         <- CM.comma
-  depth     <- CM.parseWord
-  _         <- CM.comma
-  mag       <- CM.parseWord
-  _         <- CM.comma
-  magType   <- CM.parseWord
-  _         <- CM.comma
-  nst       <- CM.parseWord
-  _         <- CM.comma
-  gap       <- CM.parseWord
-  _         <- CM.comma
-  dmin      <- CM.parseWord
-  _         <- CM.comma
-  rms       <- CM.parseWord
-  _         <- CM.comma
-  net       <- CM.parseWord
-  _         <- CM.comma
-  iD        <- CM.parseWord
-  _         <- CM.comma
-  updated   <- CM.parseWord
-  _         <- CM.comma
-  place     <- parseLocation
-  _         <- CM.comma
-  typ       <- CM.parseWord
-  return $ EarthQuake time 
-                      latitude 
-                      longitude
-                      depth
-                      mag
-                      magType
-                      nst
-                      gap
-                      dmin
-                      rms
-                      net
-                      iD
-                      updated
-                      place
-                      typ 
+  tm      <- CM.parseWord
+  case CM.parseUTC format tm of
+       Nothing -> fail tm
+       Just x -> do
+         _         <- CM.comma
+         latitude  <- CM.parseWord
+         _         <- CM.comma
+         longitude <- CM.parseWord
+         _         <- CM.comma
+         depth     <- CM.parseWord
+         _         <- CM.comma
+         mag       <- CM.parseWord
+         _         <- CM.comma
+         magType   <- CM.parseWord
+         _         <- CM.comma
+         nst       <- CM.parseWord
+         _         <- CM.comma
+         gap       <- CM.parseWord
+         _         <- CM.comma
+         dmin      <- CM.parseWord
+         _         <- CM.comma
+         rms       <- CM.parseWord
+         _         <- CM.comma
+         net       <- CM.parseWord
+         _         <- CM.comma
+         iD        <- CM.parseWord
+         _         <- CM.comma
+         updated   <- CM.parseWord
+         _         <- CM.comma
+         place     <- parseLocation
+         _         <- CM.comma
+         typ       <- CM.parseWord
+         return $ EarthQuake x 
+                             latitude 
+                             longitude
+                             depth
+                             mag
+                             magType
+                             nst
+                             gap
+                             dmin
+                             rms
+                             net
+                             iD
+                             updated
+                             place
+                             typ 
                       
                          
   
@@ -127,8 +134,4 @@ main = CM.parseOnly parseEarthQuake $
 
    
    
-iso8601 :: CM.UTCTime -> String
-iso8601 = CM.formatTime CM.defaultTimeLocale "%FT%T%QZ"
-   
--- commaSep = (PC8.many1 $ PC8.notChar ',') `PC8.sepBy'` (PC8.char ',')            
    
