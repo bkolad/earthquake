@@ -46,6 +46,11 @@ parseUTC = parseTimestamp
       CM.parseTimeOrError False CM.defaultTimeLocale "%FT%T%QZ"
  
  
+parseLocation:: CM.Parser String
+parseLocation = location <|> CM.parseWord 
+  where location = CM.char '"' *> (CM.many1 $ CM.notChar '"') <* CM.char '"' 
+                      
+ 
  
   
 parseEarthQuake :: CM.Parser EarthQuake  
@@ -95,12 +100,7 @@ parseEarthQuake = do
                       place
                       typ 
                       
-                      
-parseLocation:: CM.Parser String
-parseLocation = location <|> CM.parseWord 
-  where location = CM.char '"' *> (CM.many1 $ CM.notChar '"') <* CM.char '"' 
-                      
-    
+                         
   
 earthquakes :: 
   CM.MonadResource m 
