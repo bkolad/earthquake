@@ -42,14 +42,6 @@ instance Show EarthQuake where
 format = "%FT%T%QZ"
  
  
-{-- 
-parseUTC :: String -> CM.UTCTime
-parseUTC = parseTimestamp 
-  where
-    parseTimestamp = 
-      CM.parseTimeOrError False CM.defaultTimeLocale "%FT%T%QZ"
-      --}
- 
 parseLocation:: CM.Parser String
 parseLocation = location <|> CM.parseWord 
   where location = CM.char '"' *> (CM.many1 $ CM.notChar '"') <* CM.char '"' 

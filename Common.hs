@@ -96,7 +96,7 @@ parserC parser =
  
 cutOffC ::    
   MonadThrow m     
-  => Conduit (Either String a)  m (Either String a) 
+  => Conduit (Either String a) m (Either String a) 
 cutOffC = 
   await >>= maybe (return()) (process)
   where

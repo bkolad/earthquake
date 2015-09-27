@@ -2,11 +2,6 @@ module LHCDataParser where
 
 import qualified Common as CM
 import qualified Data.ByteString.Char8 as BC
-import Data.Time
-
-import Data.Attoparsec.Internal.Types
-
-import qualified Data.ByteString as BS
 
 
 data POS_MEAN_H = 
@@ -19,6 +14,8 @@ data POS_MEAN_H =
 
       
 format = "%Y-%m-%d %H:%M:%S%Q"       
+  
+  
   
 parsePosition :: CM.Parser POS_MEAN_H  
 parsePosition = 
