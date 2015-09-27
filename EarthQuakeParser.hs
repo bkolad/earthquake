@@ -51,53 +51,50 @@ parseLocation = location <|> CM.parseWord
   
 parseEarthQuake :: CM.Parser EarthQuake  
 parseEarthQuake = do 
-  tm      <- CM.parseWord
-  case CM.parseUTC format tm of
-       Nothing -> fail tm
-       Just x -> do
-         _         <- CM.comma
-         latitude  <- CM.parseWord
-         _         <- CM.comma
-         longitude <- CM.parseWord
-         _         <- CM.comma
-         depth     <- CM.parseWord
-         _         <- CM.comma
-         mag       <- CM.parseWord
-         _         <- CM.comma
-         magType   <- CM.parseWord
-         _         <- CM.comma
-         nst       <- CM.parseWord
-         _         <- CM.comma
-         gap       <- CM.parseWord
-         _         <- CM.comma
-         dmin      <- CM.parseWord
-         _         <- CM.comma
-         rms       <- CM.parseWord
-         _         <- CM.comma
-         net       <- CM.parseWord
-         _         <- CM.comma
-         iD        <- CM.parseWord
-         _         <- CM.comma
-         updated   <- CM.parseWord
-         _         <- CM.comma
-         place     <- parseLocation
-         _         <- CM.comma
-         typ       <- CM.parseWord
-         return $ EarthQuake x 
-                             latitude 
-                             longitude
-                             depth
-                             mag
-                             magType
-                             nst
-                             gap
-                             dmin
-                             rms
-                             net
-                             iD
-                             updated
-                             place
-                             typ 
+  tm        <- CM.parseUTC format CM.parseWord
+  _         <- CM.comma
+  latitude  <- CM.parseWord
+  _         <- CM.comma
+  longitude <- CM.parseWord
+  _         <- CM.comma
+  depth     <- CM.parseWord
+  _         <- CM.comma
+  mag       <- CM.parseWord
+  _         <- CM.comma
+  magType   <- CM.parseWord
+  _         <- CM.comma
+  nst       <- CM.parseWord
+  _         <- CM.comma
+  gap       <- CM.parseWord
+  _         <- CM.comma
+  dmin      <- CM.parseWord
+  _         <- CM.comma
+  rms       <- CM.parseWord
+  _         <- CM.comma
+  net       <- CM.parseWord
+  _         <- CM.comma
+  iD        <- CM.parseWord
+  _         <- CM.comma
+  updated   <- CM.parseWord
+  _         <- CM.comma
+  place     <- parseLocation
+  _         <- CM.comma
+  typ       <- CM.parseWord
+  return $ EarthQuake tm
+                      latitude 
+                      longitude
+                      depth
+                      mag
+                      magType
+                      nst
+                      gap
+                      dmin
+                      rms
+                      net
+                      iD
+                      updated
+                      place
+                      typ 
                       
                          
   

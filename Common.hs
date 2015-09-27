@@ -40,10 +40,19 @@ skip n = go n
           go 0
           --}       
  
-parseUTC :: String -> String-> Maybe T.UTCTime
-parseUTC format input = 
-  (T.parseTimeM False T.defaultTimeLocale format input) :: Maybe T.UTCTime
+
   
+parseUTC :: String -> PC8.Parser String -> PC8.Parser T.UTCTime
+parseUTC format parser = do 
+  tm <- parser
+  let mT = (T.parseTimeM False T.defaultTimeLocale format tm) -- :: Maybe T.UTCTime
+  case mT of
+    Nothing -> fail $ "Can't parse time" ++ tm
+    Just x -> return x
+ 
+ --maybe (fail ("Can't parse time" ++ tm)) (return) mT
+  
+   
   
  
 debug :: 

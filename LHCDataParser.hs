@@ -19,14 +19,11 @@ format = "%Y-%m-%d %H:%M:%S%Q"
   
 parsePosition :: CM.Parser POS_MEAN_H  
 parsePosition = 
-  do tm <- CM.parseWord 
-     case CM.parseUTC format tm of
-       Nothing -> fail tm
-       Just x -> do
-         _  <- CM.comma
-         v  <- CM.parseWord
-         return $ POS_MEAN_H x v  
-              
+  do tm <- CM.parseUTC format CM.parseWord
+     _  <- CM.comma
+     v  <- CM.parseWord
+     return $ POS_MEAN_H tm v  
+            
                            
     
     
