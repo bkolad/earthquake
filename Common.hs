@@ -1,14 +1,33 @@
 module Common (skip
-               , MonadResource
-               , runResourceT
+               , R.MonadResource
+               , R.runResourceT
+               , T.UTCTime
+               , T.parseTimeOrError
+               , T.defaultTimeLocale
+               , T.formatTime
+               , P.Parser
+               , PC8.char
+               , PC8.many1
+               , PC8.notChar
+               , PC8.parseOnly
+               , parseWord
+               , debug
+               , parserC
+               , cutOffC
+               , comma 
                ) where 
 
+import qualified Control.Monad.Trans.Resource  as R
+import qualified Data.Time as T
+import qualified Data.Attoparsec.ByteString as P
+import qualified Data.Attoparsec.ByteString.Char8 as PC8
+import Control.Monad.Trans(liftIO, MonadIO)
+import Control.Monad.Catch(MonadThrow)
+import qualified Data.ByteString as BS
 import Data.Conduit
-import Control.Monad.Trans.Resource 
+
          
-         
-         
-         
+               
            {--
 skip :: MonadResource m => Int -> Conduit a m a
 skip n = go n
@@ -22,10 +41,27 @@ skip n = go n
           yield a
           go 0
           --}       
-            
-            
+ 
+debug :: 
+  (Show a, MonadThrow m, MonadIO m)
+  => Conduit a m a    
+debug = 
+  awaitForever $ \x -> (liftIO $ print x) 
+                    >> yield x  
+ 
+ 
+ 
+comma :: P.Parser Char 
+comma = PC8.char ',' 
+
+
+
+parseWord:: P.Parser String
+parseWord = PC8.many' $ noneOf [',']
+
+
                  
-skip :: MonadResource m => Int -> Conduit a m a
+skip :: R.MonadResource m => Int -> Conduit a m a
 skip n = go n
   where 
     go x = await 
@@ -39,4 +75,29 @@ skip n = go n
           else 
             go (x-1)
             
+  
+  
+noneOf :: [Char] -> P.Parser Char  
+noneOf cs = PC8.satisfy (\c -> not (elem c cs)) 
+  
+  
+  
+parserC :: 
+  MonadThrow m
+  => P.Parser a -> Conduit BS.ByteString m (Either String a)  
+parserC parser = 
+  awaitForever(\x -> yield(PC8.parseOnly parser x))   
+ 
+ 
+ 
+cutOffC ::    
+  MonadThrow m     
+  => Conduit (Either String a)  m (Either String a) 
+cutOffC = 
+  await >>= maybe (return()) (process)
+  where
+    process x =
+      case x of
+        l@(Left _)  -> yield l
+        r@(Right x) -> yield r >> cutOffC  
                  
