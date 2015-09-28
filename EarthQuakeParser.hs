@@ -101,7 +101,7 @@ parseEarthQuake = do
 earthquakes :: 
   CM.MonadResource m 
   => FilePath 
-  -> m [Either String EarthQuake]
+  -> m [CM.Perhaps EarthQuake]
 earthquakes fn = do
   CB.sourceFile fn
   =$= CB.lines
@@ -112,8 +112,8 @@ earthquakes fn = do
   
   
   
-start :: IO (Either String [EarthQuake])
-start = CM.runResourceT (sequence <$> earthquakes query)  
+earthQuakeList :: IO (Either String [EarthQuake])
+earthQuakeList = CM.runResourceT (sequence <$> earthquakes query)  
   
        
       

@@ -13,6 +13,10 @@ module Common (skip
                , parserC
                , cutOffC
                , comma 
+               , MonadIO
+               , MonadThrow
+               , liftIO
+               , Perhaps
                ) where 
 
 import qualified Control.Monad.Trans.Resource  as R
@@ -24,6 +28,8 @@ import Control.Monad.Catch(MonadThrow)
 import qualified Data.ByteString as BS
 import Data.Conduit
 
+         
+type Perhaps a = Either String a         
          
                
            {--
