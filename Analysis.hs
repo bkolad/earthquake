@@ -8,6 +8,7 @@ import qualified Data.Conduit.Binary as CB
 import qualified EarthQuakeParser as EQP
 import Data.Conduit
 
+import qualified Data.ByteString.Char8 as BC
 
 
 posData = "/home/blazej/Programowanie/EarthQake/ROW_DATA/TIMBER_DATA_2011_01_01-2011_07_31.csv"
@@ -34,6 +35,34 @@ process ls=
       
       --}              
                     
+                    
+data Range = Earlier 
+           | InWindow 
+           | Later                     
+                    
+                    
+timeRange:: EQP.EarthQuake -> LHCP.POS_MEAN_H -> CM.NominalDiffTime
+timeRange eQ pos = (EQP.time eQ) `CM.diffUTCTime` ( LHCP.time pos)
+                  
+                  
+format = "%Y-%m-%d %H:%M:%S%Q"  
+
+
+parseUTC = CM.parseUTC format CM.parseWord
+                  
+t1 = CM.parseOnly parseUTC $ BC.pack "2011-01-01 00:52:01.163"
+
+t2 = CM.parseOnly parseUTC $ BC.pack "2011-01-01 00:51:01.163"                  
+                  
+
+--dff :: Either String Double                  
+dff = (fromRational . toRational) <$> (CM.diffUTCTime <$> t1 <*> t2)
+                  
+
+                  
+-- dff2 = ((fromRational . toRational . CM.diffUTCTime) <$> t1 <*> t2)
+                  
+                  
 lhcData :: 
   CM.MonadResource m 
   => FilePath 
@@ -44,6 +73,7 @@ lhcData fn ls = do
   =$= CM.skip 3
   =$= (CM.parserC LHCP.parsePosition)
   =$= (process ls)
+  =$= CM.debug
   $$ CL.consume 
   
    

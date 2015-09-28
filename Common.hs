@@ -2,6 +2,8 @@ module Common (skip
                , R.MonadResource
                , R.runResourceT
                , T.UTCTime
+               , T.NominalDiffTime
+               , T.diffUTCTime
                , parseUTC
                , P.Parser
                , PC8.char
