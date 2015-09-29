@@ -36,32 +36,33 @@ process ls=
       --}              
                     
                     
-data Range = Earlier 
+data TimeStatus = 
+             Earlier 
            | InWindow 
-           | Later                     
+           | Later    
+           deriving (Show)
+          
+          
+          
                     
-                    
-timeRange:: EQP.EarthQuake -> LHCP.POS_MEAN_H -> CM.NominalDiffTime
-timeRange eQ pos = (EQP.time eQ) `CM.diffUTCTime` ( LHCP.time pos)
+timeRange :: Double ->  LHCP.POS_MEAN_H -> EQP.EarthQuake -> TimeStatus
+timeRange interval pos eQ  =
+  toRange dT (toRational interval) 
+  where
+    dT = toRational $  ( LHCP.time pos) `CM.diffUTCTime` (EQP.time eQ)
+    
+    toRange dt timeWindow
+      | dt < 0.0 = Earlier  
+      | dt <= timeWindow = InWindow
+      | dt > timeWindow = Later
+  
+    
                   
-                  
-format = "%Y-%m-%d %H:%M:%S%Q"  
+    
+    
+tR = (timeRange (60.0*60)) <$> LHCP.lhcD <*>  EQP.eqP     
 
-
-parseUTC = CM.parseUTC format CM.parseWord
-                  
-t1 = CM.parseOnly parseUTC $ BC.pack "2011-01-01 00:52:01.163"
-
-t2 = CM.parseOnly parseUTC $ BC.pack "2011-01-01 00:51:01.163"                  
-                  
-
---dff :: Either String Double                  
-dff = (fromRational . toRational) <$> (CM.diffUTCTime <$> t1 <*> t2)
-                  
-
-                  
--- dff2 = ((fromRational . toRational . CM.diffUTCTime) <$> t1 <*> t2)
-                  
+                 
                   
 lhcData :: 
   CM.MonadResource m 

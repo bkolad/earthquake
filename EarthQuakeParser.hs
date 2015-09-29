@@ -118,8 +118,8 @@ earthQuakeList = CM.runResourceT (sequence <$> earthquakes query)
        
       
       
-main = CM.parseOnly parseEarthQuake $ 
-   BC.pack "2015-09-18T15:59:42.800Z,15.2337,-45.9734,10,6,mwc,,31,13.337,1.12,us,us20003lc6,2015-09-19T01:57:01.000Z,\"Northern Mid-Atlantic, lala\", earthquake"
+eqP = CM.parseOnly parseEarthQuake $ 
+   BC.pack "2011-02-01T01:30:01.163Z,15.2337,-45.9734,10,6,mwc,,31,13.337,1.12,us,us20003lc6,2015-09-19T01:57:01.000Z,\"Northern Mid-Atlantic, lala\", earthquake"
 
    
    

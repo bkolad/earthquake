@@ -27,8 +27,8 @@ parsePosition =
             
                           
  
-main = CM.parseOnly parsePosition $ 
-   BC.pack "2011-01-01 00:56:01.163,0"
+lhcD = CM.parseOnly parsePosition $ 
+   BC.pack "2011-02-01 02:30:01.163,0"
    
    
    
