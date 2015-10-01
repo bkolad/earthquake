@@ -17,6 +17,7 @@ posData = "/home/blazej/Programowanie/EarthQake/ROW_DATA/TIMBER_DATA_2011_01_01-
 
 interval = 5*60*60 -- 5 houers
 
+output = "/home/blazej/Programowanie/EarthQake/FILTERED DATA/"
 
 data TimeStatus = 
              Earlier 
@@ -91,7 +92,7 @@ saveToFile = do
     Just (x,ls) -> (CM.liftIO $ CM.runResourceT $
       (CL.sourceList ls)
       =$= (CL.map (\_ -> BC.pack "aa"))
-      $$ (CB.sinkFile "x")) >> saveToFile
+      $$ (CB.sinkFile (output ++ (show x)))) >> saveToFile
       
            
            
@@ -101,7 +102,7 @@ saveToFile = do
 lhcData :: 
   CM.MonadResource m 
   => FilePath 
-  ->  [EQP.EarthQuake] -> m [(EQP.EarthQuake, [LHCP.POS_MEAN_H])]  
+  ->  [EQP.EarthQuake] -> m ()--[(EQP.EarthQuake, [LHCP.POS_MEAN_H])]  
 lhcData fn ls = do 
   CB.sourceFile fn
   =$= CB.lines
@@ -110,7 +111,7 @@ lhcData fn ls = do
   =$= (process ls)
   =$= (coll Nothing)
   =$= CM.debug
-  $$ CL.consume 
+  $$ saveToFile-- CL.consume 
   
   
   
