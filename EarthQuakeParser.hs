@@ -26,7 +26,7 @@ data EarthQuake =
             , dmin :: String
             , rms :: String
             , net :: String
-            , id :: String
+            , iD :: String
             , updated :: String
             , place :: String
             , typ :: String
@@ -36,6 +36,10 @@ data EarthQuake =
             
 instance Show EarthQuake where
   show e = "{"++(show $ time e)++"  ::  "++(place e) ++" }"
+ 
+
+instance Eq EarthQuake where
+  (==) a b = (iD a) == (iD b)
  
  
  

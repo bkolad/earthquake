@@ -67,7 +67,7 @@ debug ::
   (Show a, MonadThrow m, MonadIO m)
   => Conduit a m a    
 debug = 
-  awaitForever $ \x -> (liftIO $ print x) 
+  awaitForever $ \x -> (liftIO $ print x)>> (liftIO $ print "*****************************************************************************")
                     >> yield x  
  
  
