@@ -35,7 +35,7 @@ data EarthQuake =
 
             
 instance Show EarthQuake where
-  show e = "{"++(show $ time e)++"  ::  "++(place e) ++" }"
+  show e = (show $ time e)++"_"++(place e) ++"_"++(iD e)
  
 
 instance Eq EarthQuake where

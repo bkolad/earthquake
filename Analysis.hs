@@ -13,17 +13,17 @@ import Data.Conduit
 import qualified Data.ByteString.Char8 as BC
 
 
-posData = "/home/blazej/Programowanie/EarthQake/ROW_DATA/TIMBER_DATA_2011_01_01-2011_07_31.csv"
+posData = "/home/blazej/Programowanie/EarthQake/ROW_DATAAll.txt"
 
 interval = 5*60*60 -- 5 houers
 
-output = "/home/blazej/Programowanie/EarthQake/FILTERED DATA/"
+output = "/home/blazej/Programowanie/EarthQake/FILTERED DATA REPEAT/"
 
 data TimeStatus = 
              Earlier 
            | InWindow 
            | Later    
-           deriving (Show)
+           deriving (Show, Eq)
           
           
           
@@ -79,7 +79,9 @@ coll st =
     fun (e,l) (Just(a, b)) | e == a = coll $ Just(a, l:b)
     fun (e,l) (Just(a, b)) | e /= a = do
       yield (a, reverse b)
-      coll $ Just (e, [l])
+      coll $ Just (e, l : (fIsInWindow e b))  
+      
+    fIsInWindow e b = filter (\ x -> (timeRange interval x e) == InWindow) b 
     
   
                   
@@ -89,14 +91,23 @@ saveToFile = do
   xM <- await
   case xM of 
     Nothing -> return ()
-    Just (x,ls) -> (CM.liftIO $ CM.runResourceT $
-      (CL.sourceList ls)
-      =$= (CL.map (\_ -> BC.pack "aa"))
-      $$ (CB.sinkFile (output ++ (show x)))) >> saveToFile
+    Just (fN,ls) -> if (length ls > 50) 
+                       then
+                         (save fN ls) >> saveToFile
+                       else
+                         saveToFile
+    where
+      save fN ls = 
+        CM.liftIO $ CM.runResourceT $
+        (CL.sourceList ls)
+        =$= (CL.map (\x -> LHCP.encode x))
+        =$= unlinesC
+        $$ (CB.sinkFile (output ++ show fN))
       
            
            
-           
+unlinesC :: Monad m =>  Conduit BC.ByteString m BC.ByteString           
+unlinesC = awaitForever (\x -> (yield x) >> (yield $ BC.singleton '\n'))
            
            
 lhcData :: 
@@ -110,52 +121,13 @@ lhcData fn ls = do
   =$= (CM.parserC LHCP.parsePosition)
   =$= (process ls)
   =$= (coll Nothing)
-  =$= CM.debug
+ -- =$= CM.debug
   $$ saveToFile-- CL.consume 
   
   
   
 
-   
-   {--
-toFile :: CM.MonadResource m => Sink String m () 
-toFile =    
-  bracketP
-  (SIO.openFile "test.txt" SIO.WriteMode)
-  (\handle -> putStrLn "Closing handle" >> SIO.hClose handle)  
-  write
-  where write handle = awaitForever (\x -> CM.liftIO (SIO.hPutStrLn handle x))
-        
-        --}
-        
-
-  
-ss :: CM.MonadResource m => Source m String
-ss = do yield "1"
-        yield "2"
-        yield "3"
-        yield "1"        
-        
-toFile2 :: CM.MonadResource m =>  Sink String m ()
-toFile2 = do 
-  xM <- await
-  CM.liftIO $ print ("TF    " ++ (show xM))
-  case xM of
-    Nothing -> return ()
-    Just x -> do CM.liftIO (E.bracket (SIO.openFile x SIO.AppendMode) (\handle -> putStrLn "Closing handle" >> SIO.hClose handle) (loop x))
-                 toFile2
-  
-  
-loop :: String -> SIO.Handle -> IO ()
-loop x h = (SIO.hPutStrLn h x)
-             
-          
-          
-        
-tt :: IO ()        
-tt = CM.runResourceT (ss $$ toFile2)        
-   
-   
+       
 main = do
   ls <- EQP.earthQuakeList
   case ls of

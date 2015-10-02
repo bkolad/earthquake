@@ -31,7 +31,8 @@ lhcD = CM.parseOnly parsePosition $
    BC.pack "2011-02-01 02:30:01.163,0"
    
    
-   
+encode :: POS_MEAN_H -> BC.ByteString
+encode pm = BC.pack $ show (time pm) ++", "++ value pm
    
    
   -- parseT = parseUTC "2011-01-01 00:56:02.44"   
